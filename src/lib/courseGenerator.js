@@ -144,11 +144,11 @@ export function generateCourse(seed = Date.now(), playerCount = 8) {
   const leftLauncher = { x: tubeWidth / 2, y: 700, width: tubeWidth - 6 }
   const rightLauncher = { x: W - tubeWidth / 2, y: 700, width: tubeWidth - 6 }
 
-  // 63px Narrow Center Golden Win Pit
-  const winWidth = 63
+  // 95px Wide Center Golden Win Pit (+50% increase from 63px)
+  const winWidth = 95
   const goldenSlot = {
-    xMin: W / 2 - winWidth / 2, // 308.5
-    xMax: W / 2 + winWidth / 2, // 371.5
+    xMin: W / 2 - winWidth / 2, // 292.5
+    xMax: W / 2 + winWidth / 2, // 387.5
     centerX: W / 2,
     yMin: 654,
     yMax: 775,

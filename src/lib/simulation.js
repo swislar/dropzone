@@ -63,9 +63,21 @@ export class RaceSimulation {
       Bodies.rectangle(tubeWidth / 2, 748, tubeWidth + 10, 20, { ...wallOpts, restitution: 0.85 }),
       Bodies.rectangle(width - tubeWidth / 2, 748, tubeWidth + 10, 20, { ...wallOpts, restitution: 0.85 }),
 
-      // EXACT 1-TO-1 ALIGNED OUTWARD FUNNEL RAMPS (Top physics surface coincides 100% with visual pentagon at y = 694 -> 654)
-      Bodies.rectangle((tubeWidth + goldenSlot.xMin) / 2, 678, 267.5, 8, { ...wallOpts, angle: -0.1503, friction: 0.001, restitution: 0.4 }),
-      Bodies.rectangle((width - tubeWidth + goldenSlot.xMax) / 2, 678, 267.5, 8, { ...wallOpts, angle: 0.1503, friction: 0.001, restitution: 0.4 }),
+      // DYNAMIC 1-TO-1 ALIGNED OUTWARD FUNNEL RAMPS (Adapts automatically to win slot width)
+      Bodies.rectangle(
+        (tubeWidth + goldenSlot.xMin) / 2,
+        678,
+        Math.hypot(goldenSlot.xMin - tubeWidth, -40),
+        8,
+        { ...wallOpts, angle: Math.atan2(-40, goldenSlot.xMin - tubeWidth), friction: 0.001, restitution: 0.4 }
+      ),
+      Bodies.rectangle(
+        (width - tubeWidth + goldenSlot.xMax) / 2,
+        678,
+        Math.hypot(goldenSlot.xMax - (width - tubeWidth), -40),
+        8,
+        { ...wallOpts, angle: Math.atan2(-40, goldenSlot.xMax - (width - tubeWidth)), friction: 0.001, restitution: 0.4 }
+      ),
 
       // SMOOTH THROAT GUIDE RAMPS
       Bodies.rectangle(36, 680, 44, 8, { ...wallOpts, angle: 0.45, friction: 0.001 }),

@@ -2,8 +2,6 @@ import Matter from 'matter-js'
 
 const { Engine, World, Bodies, Body, Composite } = Matter
 
-const MAX_RACE_MS = 45000
-
 export class RaceSimulation {
   constructor(course, players) {
     this.course = course
@@ -312,11 +310,10 @@ export class RaceSimulation {
 
     const timeSinceFirstFinish = this.firstFinishMs !== null ? this.elapsedMs - this.firstFinishMs : 0
     const shouldFinishByTimer = this.firstFinishMs !== null && timeSinceFirstFinish >= 3500
-    const shouldFinishBySafety = this.elapsedMs >= MAX_RACE_MS
 
-    if ((shouldFinishByTimer || shouldFinishBySafety) && !this.raceOver) {
+    if (shouldFinishByTimer && !this.raceOver) {
       this.raceOver = true
-    } else if (this.results.length === this.players.length) {
+    } else if (this.results.length === this.players.length && this.players.length > 0) {
       this.raceOver = true
     }
 

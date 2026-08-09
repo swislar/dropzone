@@ -62,16 +62,25 @@ export function recordWin(name) {
   }
 }
 
-/** Returns the top winners on this device, most wins first. */
-export function loadHallOfFame(limit = 3) {
+/** Returns all recorded 1st place winners on this device, most wins first. */
+export function loadHallOfFame(limit) {
   try {
     const raw = localStorage.getItem(HOF_KEY)
     if (!raw) return []
     const hof = JSON.parse(raw)
-    return Object.values(hof)
-      .sort((a, b) => b.wins - a.wins)
-      .slice(0, limit)
+    const sorted = Object.values(hof).sort((a, b) => b.wins - a.wins)
+    return limit ? sorted.slice(0, limit) : sorted
   } catch {
     return []
   }
 }
+
+/** Clears all recorded Hall of Fame data from localStorage. */
+export function clearHallOfFame() {
+  try {
+    localStorage.removeItem(HOF_KEY)
+  } catch {
+    // ignore
+  }
+}
+

@@ -2,6 +2,10 @@
   position: relative;
 }
 
+.swatch-wrap.is-open {
+  z-index: 99999;
+}
+
 .swatch-btn {
   width: 34px;
   height: 34px;
@@ -20,10 +24,8 @@
 }
 
 .swatch-popover {
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 8px);
-  left: 0;
+  position: fixed;
+  z-index: 99999;
   background: var(--bg-panel-2);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);

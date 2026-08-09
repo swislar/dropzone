@@ -2,18 +2,22 @@ import { useMemo, useState } from 'react'
 import MarqueeTitle from './MarqueeTitle'
 import ColorSwatch from './ColorSwatch'
 import { colorForIndex } from '../lib/palette'
-import { loadHallOfFame } from '../lib/storage'
+import { loadHallOfFame, clearHallOfFame } from '../lib/storage'
 import './setup-screen.css'
 
 const MAX_PLAYERS = 50
-const MEDALS = ['🥇', '🥈', '🥉']
 
 export default function SetupScreen({ players, setPlayers, onStart, racesRun }) {
   const [name, setName] = useState('')
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkText, setBulkText] = useState('')
   const [error, setError] = useState('')
-  const [hallOfFame] = useState(() => loadHallOfFame(3))
+  const [hallOfFame, setHallOfFame] = useState(() => loadHallOfFame())
+
+  function handleResetHof() {
+    clearHallOfFame()
+    setHallOfFame([])
+  }
 
   const remaining = MAX_PLAYERS - players.length
   const canAdd = remaining > 0
@@ -115,13 +119,22 @@ export default function SetupScreen({ players, setPlayers, onStart, racesRun }) 
           <div className="setup__hof">
             <span className="setup__hofLabel">HALL OF FAME</span>
             <div className="setup__hofList">
-              {hallOfFame.map((entry, i) => (
+              {hallOfFame.map((entry) => (
                 <span key={entry.name} className="setup__hofEntry">
-                  {MEDALS[i]} {entry.name}
+                  🏆 {entry.name}
                   <span className="setup__hofWins">×{entry.wins}</span>
                 </span>
               ))}
             </div>
+            <button
+              className="setup__hofReset"
+              type="button"
+              onClick={handleResetHof}
+              title="Reset Hall of Fame"
+              aria-label="Reset Hall of Fame"
+            >
+              Reset
+            </button>
           </div>
         )}
       </div>

@@ -20,7 +20,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.board__hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -34,6 +41,8 @@
   padding: 6px 14px;
   border-radius: 999px;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .board__status {
@@ -47,6 +56,11 @@
   border-radius: 999px;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  min-width: 0;
 }
 
 .board__btn-reset {
@@ -56,11 +70,17 @@
   color: var(--text-dim);
   background: var(--bg-panel-2);
   border: 1px solid var(--line);
-  padding: 6px 14px;
+  padding: 6px 12px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   cursor: pointer;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
   transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.1s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .board__btn-reset:active {
@@ -72,6 +92,29 @@
   color: #ffffff;
   border-color: var(--gold);
   transform: scale(1.05);
+}
+
+@media (max-width: 480px) {
+  .board {
+    padding: 8px 8px;
+    gap: 6px;
+  }
+  .board__hud {
+    gap: 6px;
+  }
+  .board__timer {
+    font-size: 0.82rem;
+    padding: 5px 10px;
+  }
+  .board__status {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+  }
+  .board__btn-reset {
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    height: 32px;
+  }
 }
 
 .board__status--finishing {

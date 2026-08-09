@@ -43,21 +43,30 @@ export default function App() {
     <div className="app">
       <AmbientBackground />
 
-      <button
-        className="mute-toggle"
-        type="button"
-        onClick={() => setMuted((m) => !m)}
-        aria-label={muted ? 'Unmute sound' : 'Mute sound'}
-        title={muted ? 'Unmute sound' : 'Mute sound'}
-      >
-        {muted ? '🔇' : '🔊'}
-      </button>
+      {screen !== 'race' && (
+        <button
+          className="mute-toggle"
+          type="button"
+          onClick={() => setMuted((m) => !m)}
+          aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+          title={muted ? 'Unmute sound' : 'Mute sound'}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
+      )}
 
       {screen === 'setup' && (
         <SetupScreen players={players} setPlayers={setPlayers} onStart={handleStart} racesRun={racesRun} />
       )}
       {screen === 'race' && (
-        <PinballBoard players={players} seed={seed} muted={muted} onFinished={handleFinished} onReset={() => setScreen('setup')} />
+        <PinballBoard
+          players={players}
+          seed={seed}
+          muted={muted}
+          onToggleMute={() => setMuted((m) => !m)}
+          onFinished={handleFinished}
+          onReset={() => setScreen('setup')}
+        />
       )}
       {screen === 'results' && (
         <ResultsScreen

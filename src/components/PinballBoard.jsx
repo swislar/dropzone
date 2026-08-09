@@ -7,7 +7,7 @@ import './pinball-board.css'
 const FIXED_DT = (1000 / 60) * 0.5
 const MAX_STEPS_PER_FRAME = 5
 
-export default function PinballBoard({ players, seed, muted, onFinished, onReset }) {
+export default function PinballBoard({ players, seed, muted, onToggleMute, onFinished, onReset }) {
   const canvasRef = useRef(null)
   const wrapRef = useRef(null)
   const simRef = useRef(null)
@@ -136,11 +136,24 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
             'Goal: Land in GOLDEN SLOT 👑'
           )}
         </div>
-        {onReset && (
-          <button className="board__btn-reset" type="button" onClick={onReset} title="Back to Setup">
-            ⚙️ Menu
-          </button>
-        )}
+        <div className="board__hud-actions">
+          {onToggleMute && (
+            <button
+              className="mute-toggle mute-toggle--hud"
+              type="button"
+              onClick={onToggleMute}
+              aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+              title={muted ? 'Unmute sound' : 'Mute sound'}
+            >
+              {muted ? '🔇' : '🔊'}
+            </button>
+          )}
+          {onReset && (
+            <button className="board__btn-reset" type="button" onClick={onReset} title="Back to Setup">
+              ⚙️ Menu
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="board__frame">

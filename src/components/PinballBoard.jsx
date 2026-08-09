@@ -16,6 +16,8 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
   const accumulatorRef = useRef(0)
   const lastTsRef = useRef(0)
   const finishedNotifiedRef = useRef(false)
+  const decorMsRef = useRef(0)
+  const trailsRef = useRef(new Map())
 
   const [elapsedMs, setElapsedMs] = useState(0)
   const [isReleased, setIsReleased] = useState(false)
@@ -31,6 +33,8 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
     finishedNotifiedRef.current = false
     accumulatorRef.current = 0
     lastTsRef.current = 0
+    decorMsRef.current = 0
+    trailsRef.current = new Map()
     setIsReleased(false)
     setFinishCountdown(null)
     setWinnerName(null)
@@ -48,6 +52,10 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
       lastTsRef.current = ts
       if (delta > 250) delta = 250
 
+      // Runs continuously (even before Drop is pressed) so idle chase
+      // lights and bumper glow feel alive in "attract mode".
+      decorMsRef.current += delta
+
       accumulatorRef.current += delta
       let steps = 0
       let snapshot = sim.getSnapshot()
@@ -57,7 +65,20 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
         steps++
       }
 
-      draw3DPinballPlayfield(ctx, course, players, snapshot)
+      // Update short motion trails behind each still-moving ball.
+      const trails = trailsRef.current
+      for (const b of snapshot.balls) {
+        if (b.finished) {
+          trails.delete(b.id)
+          continue
+        }
+        const pts = trails.get(b.id) || []
+        pts.push({ x: b.x, y: b.y })
+        if (pts.length > 7) pts.shift()
+        trails.set(b.id, pts)
+      }
+
+      draw3DPinballPlayfield(ctx, course, players, snapshot, decorMsRef.current, trails)
 
       setElapsedMs(snapshot.elapsedMs)
       setIsReleased(snapshot.isReleased)
@@ -101,7 +122,7 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
   }
 
   return (
-    <div className="board" ref={wrapRef}>
+    <div className="board screen-in" ref={wrapRef}>
       <div className="board__hud">
         <div className="board__timer">
           ⏱ {(elapsedMs / 1000).toFixed(1)}s
@@ -140,7 +161,7 @@ export default function PinballBoard({ players, seed, muted, onFinished, onReset
 /**
  * Rich 3D Night-Carnival Marquee Pinball Renderer
  */
-function draw3DPinballPlayfield(ctx, course, players, snapshot) {
+function draw3DPinballPlayfield(ctx, course, players, snapshot, decorMs, trails) {
   const { width, height, tubeWidth, pods, bumpers, slingshots, pegs, goldenSlot, themeColor = '#34e4c1' } = course
   const playerById = new Map(players.map((p) => [p.id, p]))
 
@@ -154,6 +175,10 @@ function draw3DPinballPlayfield(ctx, course, players, snapshot) {
   ctx.fillStyle = bgGrad
   ctx.fillRect(0, 0, width, height)
 
+  // 1b. Faint CRT scanline texture for arcade-cabinet depth
+  ctx.fillStyle = getScanlinePattern(ctx)
+  ctx.fillRect(0, 0, width, height)
+
   // 2. 3D Extruded Metallic Launch Tubes
   draw3DLaunchTubes(ctx, width, height, tubeWidth, themeColor)
 
@@ -165,9 +190,11 @@ function draw3DPinballPlayfield(ctx, course, players, snapshot) {
     draw3DSlingshot(ctx, s)
   }
 
-  // 5. 3D Pop Bumpers (including center Gatekeeper Bumper above Win Pit)
+  // 5. 3D Pop Bumpers (including center Gatekeeper Bumper above Win Pit) —
+  // gentle idle "attract mode" breathing glow keeps them feeling alive
+  // even before Drop is pressed.
   for (const b of bumpers) {
-    draw3DPopBumper(ctx, b)
+    draw3DPopBumper(ctx, b, decorMs)
   }
 
   // 6. 3D Pinball Peg Posts
@@ -176,7 +203,7 @@ function draw3DPinballPlayfield(ctx, course, players, snapshot) {
   }
 
   // 7. HIGH-CONTRAST SOLID Theme Color Corner Wing Pentagons & Outward Funnel Booster Kickers
-  draw3DFunnelsAndWingPentagons(ctx, width, tubeWidth, goldenSlot, themeColor, snapshot.elapsedMs)
+  draw3DFunnelsAndWingPentagons(ctx, width, tubeWidth, goldenSlot, themeColor, decorMs)
 
   // 8. 3D Metallic Coiled Spring Plungers
   const leftFired = snapshot.springFires && snapshot.springFires.some((sf) => sf.side === 'left')
@@ -187,6 +214,16 @@ function draw3DPinballPlayfield(ctx, course, players, snapshot) {
   // 9. Enclosed 3D Golden Win Pit (Enclosed between funnels y = 654..775)
   draw3DGoldenWinPit(ctx, goldenSlot)
 
+  // 9b. Soft motion trails behind moving balls, drawn under the marbles.
+  if (trails) {
+    for (const b of snapshot.balls) {
+      const player = playerById.get(b.id)
+      const pts = trails.get(b.id)
+      if (!player || !pts || pts.length < 2 || b.finished) continue
+      drawBallTrail(ctx, pts, player.color, snapshot.ballRadius)
+    }
+  }
+
   // 10. 3D Marquee Glass Balls
   const showLabels = players.length <= 16
   for (const b of snapshot.balls) {
@@ -195,8 +232,74 @@ function draw3DPinballPlayfield(ctx, course, players, snapshot) {
     draw3DMarble(ctx, b, player, snapshot.ballRadius, showLabels)
   }
 
+  // 10b. Bright impact flashes where a ball just hit a bumper/slingshot/peg
+  if (snapshot.hitFlashes && snapshot.hitFlashes.length > 0) {
+    for (const hf of snapshot.hitFlashes) {
+      drawHitFlash(ctx, hf, snapshot.elapsedMs)
+    }
+  }
+
+  // 10c. Soft vignette for cinematic focus toward the center of the board
+  const vignette = ctx.createRadialGradient(width / 2, height / 2, height * 0.35, width / 2, height / 2, height * 0.72)
+  vignette.addColorStop(0, 'rgba(0,0,0,0)')
+  vignette.addColorStop(1, 'rgba(0,0,0,0.45)')
+  ctx.fillStyle = vignette
+  ctx.fillRect(0, 0, width, height)
+
   // 11. Outer Beveled 3D Cabinet Frame
   draw3DCabinetBevel(ctx, width, height)
+}
+
+let _scanlinePattern = null
+function getScanlinePattern(ctx) {
+  if (_scanlinePattern) return _scanlinePattern
+  const tile = document.createElement('canvas')
+  tile.width = 4
+  tile.height = 4
+  const tctx = tile.getContext('2d')
+  tctx.clearRect(0, 0, 4, 4)
+  tctx.fillStyle = 'rgba(0, 0, 0, 0.07)'
+  tctx.fillRect(0, 2, 4, 1)
+  _scanlinePattern = ctx.createPattern(tile, 'repeat')
+  return _scanlinePattern
+}
+
+function drawBallTrail(ctx, pts, color, radius) {
+  ctx.save()
+  const n = pts.length
+  for (let i = 0; i < n - 1; i++) {
+    const p = pts[i]
+    const t = i / (n - 1) // 0 = oldest, 1 = newest
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, radius * (0.35 + t * 0.4), 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.globalAlpha = t * 0.22
+    ctx.fill()
+  }
+  ctx.restore()
+}
+
+function drawHitFlash(ctx, hf, elapsedMs) {
+  const age = elapsedMs - hf.timeMs
+  const life = 260
+  if (age < 0 || age > life) return
+  const t = age / life
+  const alpha = 1 - t
+  const baseR = hf.label === 'peg' ? 9 : hf.label === 'slingshot' ? 16 : 22
+  const r = baseR + t * baseR * 1.4
+  const color = hf.label === 'peg' ? '#fbd671' : '#ffffff'
+
+  ctx.save()
+  ctx.globalAlpha = alpha * 0.85
+  const grad = ctx.createRadialGradient(hf.x, hf.y, 0, hf.x, hf.y, r)
+  grad.addColorStop(0, color)
+  grad.addColorStop(0.5, hf.label === 'peg' ? 'rgba(251, 214, 113, 0.5)' : 'rgba(255, 62, 127, 0.4)')
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)')
+  ctx.beginPath()
+  ctx.arc(hf.x, hf.y, r, 0, Math.PI * 2)
+  ctx.fillStyle = grad
+  ctx.fill()
+  ctx.restore()
 }
 
 function draw3DLaunchTubes(ctx, width, height, tubeWidth, themeColor) {
@@ -343,7 +446,7 @@ function draw3DSolidPodBoxes(ctx, pods, players, isReleased, elapsedMs, releaseT
   ctx.restore()
 }
 
-function draw3DPopBumper(ctx, b) {
+function draw3DPopBumper(ctx, b, decorMs = 0) {
   ctx.save()
 
   ctx.beginPath()
@@ -351,9 +454,11 @@ function draw3DPopBumper(ctx, b) {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'
   ctx.fill()
 
+  // Gentle idle "breathing" glow so bumpers feel alive even at rest
+  const pulse = 0.5 + 0.5 * Math.sin(decorMs * 0.0022 + b.x * 0.05)
   ctx.beginPath()
-  ctx.arc(b.x, b.y, b.r + 6, 0, Math.PI * 2)
-  ctx.fillStyle = 'rgba(255, 62, 127, 0.22)'
+  ctx.arc(b.x, b.y, b.r + 5 + pulse * 3, 0, Math.PI * 2)
+  ctx.fillStyle = `rgba(255, 62, 127, ${0.16 + pulse * 0.14})`
   ctx.fill()
 
   const ringGrad = ctx.createLinearGradient(b.x - b.r, b.y - b.r, b.x + b.r, b.y + b.r)

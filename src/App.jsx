@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import SetupScreen from './components/SetupScreen'
 import PinballBoard from './components/PinballBoard'
 import ResultsScreen from './components/ResultsScreen'
-import { loadSavedPlayers, savePlayers, loadStats, bumpRacesRun } from './lib/storage'
+import AmbientBackground from './components/AmbientBackground'
+import { loadSavedPlayers, savePlayers, loadStats, bumpRacesRun, recordWin } from './lib/storage'
 
 // screen: 'setup' | 'race' | 'results'
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
   function handleFinished(ranked) {
     setResults(ranked)
     setRacesRun(bumpRacesRun().racesRun)
+    if (ranked[0]) recordWin(ranked[0].name)
     setScreen('results')
   }
 
@@ -39,6 +41,8 @@ export default function App() {
 
   return (
     <div className="app">
+      <AmbientBackground />
+
       <button
         className="mute-toggle"
         type="button"

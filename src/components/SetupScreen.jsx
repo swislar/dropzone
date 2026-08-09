@@ -2,15 +2,18 @@ import { useMemo, useState } from 'react'
 import MarqueeTitle from './MarqueeTitle'
 import ColorSwatch from './ColorSwatch'
 import { colorForIndex } from '../lib/palette'
+import { loadHallOfFame } from '../lib/storage'
 import './setup-screen.css'
 
 const MAX_PLAYERS = 50
+const MEDALS = ['🥇', '🥈', '🥉']
 
 export default function SetupScreen({ players, setPlayers, onStart, racesRun }) {
   const [name, setName] = useState('')
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkText, setBulkText] = useState('')
   const [error, setError] = useState('')
+  const [hallOfFame] = useState(() => loadHallOfFame(3))
 
   const remaining = MAX_PLAYERS - players.length
   const canAdd = remaining > 0
@@ -102,11 +105,24 @@ export default function SetupScreen({ players, setPlayers, onStart, racesRun }) 
   }, [remaining])
 
   return (
-    <div className="setup">
+    <div className="setup screen-in">
       <div className="setup__hero">
         <MarqueeTitle />
         {racesRun > 0 && (
           <p className="setup__stat">🎟️ {racesRun} race{racesRun === 1 ? '' : 's'} dropped so far on this device</p>
+        )}
+        {hallOfFame.length > 0 && (
+          <div className="setup__hof">
+            <span className="setup__hofLabel">HALL OF FAME</span>
+            <div className="setup__hofList">
+              {hallOfFame.map((entry, i) => (
+                <span key={entry.name} className="setup__hofEntry">
+                  {MEDALS[i]} {entry.name}
+                  <span className="setup__hofWins">×{entry.wins}</span>
+                </span>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
@@ -135,9 +151,14 @@ export default function SetupScreen({ players, setPlayers, onStart, racesRun }) 
           <button className="link-btn" type="button" onClick={() => setBulkOpen((o) => !o)}>
             {bulkOpen ? 'Hide bulk add' : '+ Paste a list'}
           </button>
-          <span className={`setup__counter setup__counter--${counterTone}`}>
-            {players.length}/{MAX_PLAYERS}
-          </span>
+          <div className={`setup__gauge setup__gauge--${counterTone}`} aria-hidden="true">
+            <div className="setup__gaugeTrack">
+              <div className="setup__gaugeFill" style={{ width: `${(players.length / MAX_PLAYERS) * 100}%` }} />
+            </div>
+            <span className="setup__counter">
+              {players.length}/{MAX_PLAYERS}
+            </span>
+          </div>
         </div>
 
         {bulkOpen && (

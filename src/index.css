@@ -109,6 +109,80 @@ h1, h2, h3, p {
   width: 100%;
 }
 
+/* Ambient drifting light orbs — gives every screen the same
+   arcade-cabinet atmosphere as the pinball board itself. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambient__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.28;
+  will-change: transform;
+}
+
+.ambient__orb--1 {
+  width: 340px;
+  height: 340px;
+  left: -80px;
+  top: -60px;
+  background: var(--gold);
+  animation: drift-a 22s ease-in-out infinite;
+}
+
+.ambient__orb--2 {
+  width: 300px;
+  height: 300px;
+  right: -100px;
+  top: 20%;
+  background: var(--pink);
+  animation: drift-b 26s ease-in-out infinite;
+}
+
+.ambient__orb--3 {
+  width: 360px;
+  height: 360px;
+  left: 10%;
+  bottom: -140px;
+  background: var(--teal);
+  animation: drift-c 30s ease-in-out infinite;
+}
+
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, 60px) scale(1.15); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 40px) scale(0.9); }
+}
+@keyframes drift-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -50px) scale(1.1); }
+}
+
+/* Shared entrance animation for each top-level screen */
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screen-in {
+  animation: screen-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient__orb {
+    animation: none !important;
+  }
+}
+
 .mute-toggle {
   position: fixed;
   top: max(14px, env(safe-area-inset-top));

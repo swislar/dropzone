@@ -33,7 +33,7 @@ export default function ResultsScreen({ results, onRaceAgain, onNewPlayers, mute
   const rest = results.slice(3)
 
   return (
-    <div className="results">
+    <div className="results screen-in">
       <MarqueeTitle size="sm" />
       <p className="results__subtitle">Final rankings</p>
 

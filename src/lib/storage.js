@@ -41,3 +41,37 @@ export function bumpRacesRun() {
   }
   return next
 }
+
+const HOF_KEY = 'dropzone.hof.v1'
+
+/** Records a win for a given player name — keyed case-insensitively so
+ * "Alex" and "alex" tally together, but the most recent casing is kept
+ * for display. */
+export function recordWin(name) {
+  const trimmed = (name || '').trim()
+  if (!trimmed) return
+  try {
+    const raw = localStorage.getItem(HOF_KEY)
+    const hof = raw ? JSON.parse(raw) : {}
+    const key = trimmed.toLowerCase()
+    const prevWins = hof[key]?.wins || 0
+    hof[key] = { name: trimmed, wins: prevWins + 1 }
+    localStorage.setItem(HOF_KEY, JSON.stringify(hof))
+  } catch {
+    // ignore
+  }
+}
+
+/** Returns the top winners on this device, most wins first. */
+export function loadHallOfFame(limit = 3) {
+  try {
+    const raw = localStorage.getItem(HOF_KEY)
+    if (!raw) return []
+    const hof = JSON.parse(raw)
+    return Object.values(hof)
+      .sort((a, b) => b.wins - a.wins)
+      .slice(0, limit)
+  } catch {
+    return []
+  }
+}

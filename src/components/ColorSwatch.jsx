@@ -27,7 +27,7 @@ export default function ColorSwatch({ color, onChange, label }) {
       <button
         type="button"
         className="swatch-btn"
-        style={{ background: color }}
+        style={{ '--c': color }}
         aria-label={`Change color for ${label || 'player'}`}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}

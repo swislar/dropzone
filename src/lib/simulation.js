@@ -17,6 +17,7 @@ export class RaceSimulation {
     this.firstFinishMs = null
     this.raceOver = false
     this.springFires = []
+    this.hitFlashes = []
     this.topGateBlockers = []
 
     this._finishedIds = new Set()
@@ -35,6 +36,25 @@ export class RaceSimulation {
     this._buildSlingshots()
     this._buildPegs()
     this._buildBalls()
+    this._wireHitFlashes()
+  }
+
+  /** Listens for ball collisions with bumpers/slingshots/pegs so the
+   * renderer can flash them on impact — pure visual feedback, doesn't
+   * touch physics. */
+  _wireHitFlashes() {
+    Matter.Events.on(this.engine, 'collisionStart', (event) => {
+      for (const pair of event.pairs) {
+        const { bodyA, bodyB } = pair
+        const aIsBall = bodyA.label && bodyA.label.startsWith('ball:')
+        const bIsBall = bodyB.label && bodyB.label.startsWith('ball:')
+        const other = aIsBall ? bodyB : bIsBall ? bodyA : null
+        if (!other) continue
+        if (other.label === 'popBumper' || other.label === 'slingshot' || other.label === 'peg') {
+          this.hitFlashes.push({ x: other.position.x, y: other.position.y, label: other.label, timeMs: this.elapsedMs })
+        }
+      }
+    })
   }
 
   _buildWalls() {
@@ -204,6 +224,7 @@ export class RaceSimulation {
     Engine.update(this.engine, deltaMs)
 
     this.springFires = this.springFires.filter((sf) => this.elapsedMs - sf.timeMs < 450)
+    this.hitFlashes = this.hitFlashes.filter((hf) => this.elapsedMs - hf.timeMs < 260)
 
     const { tubeWidth, width, goldenSlot } = this.course
 
@@ -347,10 +368,12 @@ export class RaceSimulation {
       firstFinishMs: this.firstFinishMs,
       finishCountdown,
       springFires: this.springFires,
+      hitFlashes: this.hitFlashes,
     }
   }
 
   destroy() {
+    Matter.Events.off(this.engine, 'collisionStart')
     World.clear(this.world, false)
     Engine.clear(this.engine)
   }

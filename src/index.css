@@ -1,16 +1,26 @@
 :root {
   /* --- Color tokens: night-carnival marquee palette --- */
-  --bg-deep: #150e23;       /* night-sky background */
-  --bg-panel: #1e1530;      /* cabinet panel */
-  --bg-panel-2: #2a1d3f;    /* raised card surface */
-  --bg-panel-3: #362849;    /* hover / input surface */
-  --line: #4a3966;          /* hairline borders on dark */
-  --gold: #e8b33d;          /* marquee bulb gold - primary accent */
+  --bg-deep: #150e23;
+  /* night-sky background */
+  --bg-panel: #1e1530;
+  /* cabinet panel */
+  --bg-panel-2: #2a1d3f;
+  /* raised card surface */
+  --bg-panel-3: #362849;
+  /* hover / input surface */
+  --line: #4a3966;
+  /* hairline borders on dark */
+  --gold: #e8b33d;
+  /* marquee bulb gold - primary accent */
   --gold-bright: #fbd671;
-  --pink: #ff3e7f;          /* neon tube pink - secondary accent */
-  --teal: #34e4c1;          /* neon teal - success / finish */
-  --text: #f4efe6;          /* warm marquee white */
-  --text-dim: #b9a9ce;      /* dusty violet-grey */
+  --pink: #ff3e7f;
+  /* neon tube pink - secondary accent */
+  --teal: #34e4c1;
+  /* neon teal - success / finish */
+  --text: #f4efe6;
+  /* warm marquee white */
+  --text-dim: #b9a9ce;
+  /* dusty violet-grey */
   --text-faint: #7c6c95;
 
   --font-display: "Bungee", system-ui, sans-serif;
@@ -28,7 +38,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -37,6 +48,7 @@ html, body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
+  scrollbar-gutter: stable;
 }
 
 #root {
@@ -75,12 +87,18 @@ input {
   color: inherit;
 }
 
-h1, h2, h3, p {
+h1,
+h2,
+h3,
+p {
   margin: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
@@ -91,9 +109,11 @@ h1, h2, h3, p {
 ::-webkit-scrollbar {
   width: 10px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-deep);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--bg-panel-3);
   border-radius: 10px;
@@ -110,6 +130,7 @@ h1, h2, h3, p {
   min-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 /* Ambient drifting light orbs — gives every screen the same
@@ -158,22 +179,52 @@ h1, h2, h3, p {
 }
 
 @keyframes drift-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, 60px) scale(1.15); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(40px, 60px) scale(1.15);
+  }
 }
+
 @keyframes drift-b {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-50px, 40px) scale(0.9); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-50px, 40px) scale(0.9);
+  }
 }
+
 @keyframes drift-c {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, -50px) scale(1.1); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
 }
 
 /* Shared entrance animation for each top-level screen */
 @keyframes screen-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .screen-in {

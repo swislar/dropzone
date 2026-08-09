@@ -4,7 +4,7 @@
   width: 100%;
   max-width: min(680px, 94vw);
   height: 100vh;
-  max-height: 100vh;
+  min-height: 580px;
   margin: 0 auto;
   padding: 12px 14px;
   display: flex;
@@ -12,7 +12,6 @@
   align-items: center;
   gap: 8px;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .board__hud {

@@ -4,11 +4,12 @@
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: clamp(20px, 5vw, 44px) 18px 60px;
+  padding: 32px 18px max(72px, calc(env(safe-area-inset-bottom, 0px) + 48px));
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  min-height: 600px;
 }
 
 .results__subtitle {
@@ -164,7 +165,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 320px;
+  min-height: 48px;
+  max-height: clamp(130px, 28vh, 320px);
   overflow-y: auto;
 }
 
